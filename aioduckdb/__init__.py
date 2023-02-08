@@ -16,7 +16,7 @@ from duckdb import (  # pylint: disable=redefined-builtin
     Warning,
 )
 
-__author__ = ["Amethyst Reese", 'Salvador Pardiñas']
+__author__ = ["Amethyst Reese", "Salvador Pardiñas"]
 from .__version__ import __version__
 from .core import connect, Connection, Cursor
 

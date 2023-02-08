@@ -25,7 +25,7 @@ from typing import (
     Type,
     Union,
     Tuple,
-    TYPE_CHECKING
+    TYPE_CHECKING,
 )
 from warnings import warn
 
@@ -92,9 +92,7 @@ class Connection(Thread):
         cursor = self._conn.execute(sql, parameters)
         return cursor.fetchone()
 
-    def _execute_fetchall(
-        self, sql: str, parameters: Iterable[Any]
-    ) -> Iterable[Tuple]:
+    def _execute_fetchall(self, sql: str, parameters: Iterable[Any]) -> Iterable[Tuple]:
         cursor = self._conn.execute(sql, parameters)
         return cursor.fetchall()
 
@@ -175,7 +173,7 @@ class Connection(Thread):
         return Cursor(self, await self._execute(self._conn.cursor))
 
     @contextmanager
-    async def query(self, query: str, alias: str = 'query_relation') -> Relation:
+    async def query(self, query: str, alias: str = "query_relation") -> Relation:
         """Create an aioduckdb relation wrapping a duckdb PyRelation object"""
         return Relation(self, await self._execute(self._conn.query, query, alias=alias))
 
@@ -220,7 +218,9 @@ class Connection(Thread):
         return cursor
 
     @contextmanager
-    async def execute_on_self(self, sql: str, parameters: Iterable[Any] = None) -> Cursor:
+    async def execute_on_self(
+        self, sql: str, parameters: Iterable[Any] = None
+    ) -> Cursor:
         """Function to execute the given query on this connection and cast it to a cursor."""
         if parameters is None:
             parameters = []
@@ -260,23 +260,17 @@ class Connection(Thread):
         return Cursor(self, cursor)
 
     @contextmanager
-    async def from_csv_auto(
-        self, file_name: str
-    ) -> Relation:
+    async def from_csv_auto(self, file_name: str) -> Relation:
         relation = await self._execute(self._conn.from_csv_auto, file_name)
         return Relation(self, relation)
 
     @contextmanager
-    async def from_df(
-        self, df: "pandas.DataFrame"
-    ) -> Relation:
+    async def from_df(self, df: "pandas.DataFrame") -> Relation:
         relation = await self._execute(self._conn.from_df, df)
         return Relation(self, relation)
 
     @contextmanager
-    async def from_arrow(
-        self, arrow_object: object
-    ) -> Relation:
+    async def from_arrow(self, arrow_object: object) -> Relation:
         relation = await self._execute(self._conn.from_arrow, arrow_object)
         return Relation(self, relation)
 
@@ -284,18 +278,16 @@ class Connection(Thread):
     async def from_parquet(
         self, file_name: str, binary_as_string: bool = False
     ) -> Relation:
-        relation = await self._execute(self._conn.from_parquet, file_name, binary_as_string=binary_as_string)
+        relation = await self._execute(
+            self._conn.from_parquet, file_name, binary_as_string=binary_as_string
+        )
         return Relation(self, relation)
 
-    async def register(
-        self, view_name: str, python_object: object
-    ) -> "Connection":
+    async def register(self, view_name: str, python_object: object) -> "Connection":
         await self._execute(self._conn.register, view_name, python_object)
         return self
 
-    async def unregister(
-        self, view_name: str
-    ) -> "Connection":
+    async def unregister(self, view_name: str) -> "Connection":
         await self._execute(self._conn.unregister, view_name)
         return self
 
@@ -345,7 +337,7 @@ class Connection(Thread):
 
     # No factories in DuckDB: proof of concept was developed and performance was worse
     # than python postprocessing
-    
+
     async def load_extension(self, path: str):
         await self._execute(self._conn.load_extension, path)  # type: ignore
 
@@ -432,7 +424,7 @@ def connect(
     *,
     iter_chunk_size=64,
     loop: Optional[asyncio.AbstractEventLoop] = None,
-    **kwargs: Any
+    **kwargs: Any,
 ) -> Connection:
     """Create and return a connection proxy to the sqlite database."""
 

@@ -6,6 +6,7 @@ if TYPE_CHECKING:
     import pyarrow
     import pandas
 
+
 class Result:
     def __init__(self, conn: "Connection", result: duckdb.DuckDBPyResult) -> None:
         self.result = result

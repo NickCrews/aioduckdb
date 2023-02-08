@@ -74,13 +74,14 @@ class SmokeTest(TestCase):
     async def test_multiple_connections(self):
         async with aioduckdb.connect(TEST_DB) as db:
             await db.execute(
-                "create table multiple_connections "
-                "(i integer, k integer)"
+                "create table multiple_connections " "(i integer, k integer)"
             )
 
             async def do_one_conn(i):
                 async with db.cursor() as dbcur:
-                    await dbcur.execute("insert into multiple_connections (k) values (?)", [i])
+                    await dbcur.execute(
+                        "insert into multiple_connections (k) values (?)", [i]
+                    )
                     # await db.commit()
 
             await asyncio.gather(*[do_one_conn(i) for i in range(10)])
@@ -93,10 +94,7 @@ class SmokeTest(TestCase):
 
     async def test_multiple_queries(self):
         async with aioduckdb.connect(TEST_DB) as db:
-            await db.execute(
-                "create table multiple_queries "
-                "(i integer, k integer)"
-            )
+            await db.execute("create table multiple_queries " "(i integer, k integer)")
 
             await asyncio.gather(
                 *[
@@ -169,8 +167,7 @@ class SmokeTest(TestCase):
         async with aioduckdb.connect(TEST_DB) as db:
             async with db.cursor() as cursor:
                 await cursor.execute(
-                    "create table context_cursor "
-                    "(i integer, k integer)"
+                    "create table context_cursor " "(i integer, k integer)"
                 )
                 await cursor.executemany(
                     "insert into context_cursor (k) values (?)",
@@ -204,22 +201,19 @@ class SmokeTest(TestCase):
         async with aioduckdb.connect(TEST_DB) as db:
             cursor = await db.cursor()
 
-            await cursor.execute(
-                "create table test_cursor_df (i integer, k integer)"
-            )
+            await cursor.execute("create table test_cursor_df (i integer, k integer)")
 
             await cursor.executemany(
                 "insert into test_cursor_df values (?, ?)", [(1, 1), (2, 2)]
             )
 
-            cursor = await cursor.execute('select * from test_cursor_df')
+            cursor = await cursor.execute("select * from test_cursor_df")
 
             df = await cursor.df()
 
-            self.assertTrue(all(df == pandas.DataFrame([
-                {'i':1,'k':2},
-                {'i':2,'k':2}
-            ])))
+            self.assertTrue(
+                all(df == pandas.DataFrame([{"i": 1, "k": 2}, {"i": 2, "k": 2}]))
+            )
 
     async def test_relation_minmax(self):
         async with aioduckdb.connect(TEST_DB) as db:
@@ -229,16 +223,17 @@ class SmokeTest(TestCase):
                 )
 
                 await cursor.executemany(
-                    "insert into test_relation_minmax values (?, ?)", [(1, 7), (2, 2), (3,5)]
+                    "insert into test_relation_minmax values (?, ?)",
+                    [(1, 7), (2, 2), (3, 5)],
                 )
 
-            relation = await db.query('select * from test_relation_minmax')
+            relation = await db.query("select * from test_relation_minmax")
 
-            mini, mink = await (await relation.min('i,k')).fetchone()
-            self.assertEqual((mini,mink), (1,2))
+            mini, mink = await (await relation.min("i,k")).fetchone()
+            self.assertEqual((mini, mink), (1, 2))
 
-            maxi, maxk = await (await relation.max('i,k')).fetchone()
-            self.assertEqual((maxi,maxk), (3,7))
+            maxi, maxk = await (await relation.max("i,k")).fetchone()
+            self.assertEqual((maxi, maxk), (3, 7))
 
     async def test_connection_properties(self):
         async with aioduckdb.connect(TEST_DB) as db:
@@ -249,8 +244,7 @@ class SmokeTest(TestCase):
                 # self.assertFalse(db.in_transaction)
                 # in_transaction not available in duckdb
                 await cursor.execute(
-                    "create table test_properties "
-                    "(i integer, k integer, d text)"
+                    "create table test_properties " "(i integer, k integer, d text)"
                 )
                 await cursor.execute(
                     "insert into test_properties (k, d) values (1, 'hi')"
@@ -289,9 +283,7 @@ class SmokeTest(TestCase):
 
     async def test_fetch_all(self):
         async with aioduckdb.connect(TEST_DB) as db:
-            await db.execute(
-                "create table test_fetch_all (i integer, k integer)"
-            )
+            await db.execute("create table test_fetch_all (i integer, k integer)")
             await db.execute(
                 "insert into test_fetch_all (k) values (10), (24), (16), (32)"
             )
@@ -304,11 +296,17 @@ class SmokeTest(TestCase):
 
     async def test_connect_error(self):
         bad_db = Path("/something/that/shouldnt/exist.db")
-        with self.assertRaisesRegex(OperationalError, 'IO Error: Cannot open file "/something/that/shouldnt/exist.db": No such file or directory'):
+        with self.assertRaisesRegex(
+            OperationalError,
+            'IO Error: Cannot open file "/something/that/shouldnt/exist.db": No such file or directory',
+        ):
             async with aioduckdb.connect(bad_db) as db:
                 self.assertIsNone(db)  # should never be reached
 
-        with self.assertRaisesRegex(OperationalError, 'IO Error: Cannot open file "/something/that/shouldnt/exist.db": No such file or directory'):
+        with self.assertRaisesRegex(
+            OperationalError,
+            'IO Error: Cannot open file "/something/that/shouldnt/exist.db": No such file or directory',
+        ):
             db = await aioduckdb.connect(bad_db)
             self.assertIsNone(db)  # should never be reached
 
